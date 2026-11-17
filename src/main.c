@@ -5,10 +5,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+
+
+void handle_event(Display *d, Window w, XEvent e, int s, const char *msg)
+{
+	XNextEvent(d, &e);
+	if (e.type == Expose)
+		XDrawString(d, w, DefaultGC(d, s), 10, 50, msg, strlen(msg));
+	if (e.type == KeyPress)
+	{
+		KeySym key = XLookupKeysym(&e.xkey, 0);
+		if (&key != NULL)
+			printf("Keyboard event.\n");
+	}
+	if (e.type == ButtonPressMask || e.type == PointerMotionMask)
+	{
+		printf("Mouse event.\n");
+	}
+}
+
 int main(void)
 {
-	printf("Hello world!\n");
-
 	Display *d;
 	Window w;
 	Window rootWindow;
@@ -25,19 +44,26 @@ int main(void)
 
 	s = DefaultScreen(d);
 	rootWindow = RootWindow(d, s);
-	w = XCreateSimpleWindow(d, rootWindow, 10, 10, 100, 100, 1, BlackPixel(d, s), WhitePixel(d, s));
-	XSelectInput(d, w, ExposureMask | KeyPressMask);
+	/* 
+	 *		extern Window XCreateSimpleWindow(
+    			Display*								// display,
+    			Window									// parent,
+    			int											// x,
+    			int											// y,
+    			unsigned int						// width,
+    			unsigned int						// height,
+    			unsigned int						// border_width,
+    			unsigned long						// border,
+    			unsigned long						// background
+				);
+	 */
+	w = XCreateSimpleWindow(d, rootWindow, 10, 10, WINDOW_WIDTH, WINDOW_HEIGHT, 1, BlackPixel(d, s), WhitePixel(d, s));
+	XSelectInput(d, w, ExposureMask | KeyPressMask | ButtonPressMask | PointerMotionMask);
 	XMapWindow(d, w);
 
 	while (1)
 	{
-		XNextEvent(d, &e);
-		if (e.type == Expose)
-		{
-			XFillRectangle(d, w, DefaultGC(d, s), 20, 20, 10, 10);
-			XDrawString(d, w, DefaultGC(d, s), 10, 50, msg, strlen(msg));
-		}
-		//if (e.type == KeyPress) break;
+		handle_event(d, w, e, s, msg);
 	}
 
 	XCloseDisplay(d);

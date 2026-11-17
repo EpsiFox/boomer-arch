@@ -1,9 +1,11 @@
 CFLAGS=-std=c17 -g -fno-common -Wextra -Wpedantic
-
+# -lglut -lm -- if default libs is not enough
+LFLAGS=-lGL -lXext -lX11 
 SRC_FILES = src/config.c src/la.c src/main.c src/navigation.c src/screenshot.c
 
 boomer-arch: 
-	gcc -o boomer-arch $(SRC_FILES) -lX11
+	gcc -o boomer-arch $(SRC_FILES) $(LFLAGS)
+
 
 install:
 	@echo "Installing boomer-arch..."
