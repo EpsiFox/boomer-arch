@@ -11,8 +11,9 @@ int main(void)
 
 	Display *d;
 	Window w;
+	Window rootWindow;
 	XEvent e;
-	const char *msg = "Hello, World!";
+	const char *msg = "Hello, boomer!";
 	int s;
 
 	d = XOpenDisplay(NULL);
@@ -23,7 +24,8 @@ int main(void)
 	}
 
 	s = DefaultScreen(d);
-	w = XCreateSimpleWindow(d, RootWindow(d, s), 10, 10, 100, 100, 1, BlackPixel(d, s), WhitePixel(d, s));
+	rootWindow = RootWindow(d, s);
+	w = XCreateSimpleWindow(d, rootWindow, 10, 10, 100, 100, 1, BlackPixel(d, s), WhitePixel(d, s));
 	XSelectInput(d, w, ExposureMask | KeyPressMask);
 	XMapWindow(d, w);
 
