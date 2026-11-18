@@ -9,13 +9,14 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-typedef struct App
+typedef struct
 {
 	Display *display;
 	Window rootWindow;
 	Window window;
 	XEvent event;
 	int screen;
+	int running;
 } App;
 
 App *create_app(int width, int height)
@@ -40,18 +41,27 @@ App *create_app(int width, int height)
 	app->window = XCreateSimpleWindow(app->display, app->rootWindow, 10, 10, width, height, 1, BlackPixel(app->display, app->screen), WhitePixel(app->display, app->screen));
 	XSelectInput(app->display, app->window, ExposureMask | KeyPressMask | ButtonPressMask | PointerMotionMask);
 	XMapWindow(app->display, app->window);
+	app->running = 1;
 	return app;
+}
+
+void draw_string(App *app, int x, int y, char *msg)
+{
+	XDrawString(app->display, app->window, DefaultGC(app->display, app->screen), x, y, msg, strlen(msg));
 }
 
 void handle_app_event(App *app, char *msg)
 {
 	XNextEvent(app->display, &app->event);
-	if (app->event.type == Expose)
-		XDrawString(app->display, app->window, DefaultGC(app->display, app->screen), 10, 50, msg, strlen(msg));
+	if (app->event.type == Expose) 
+	{
+		for (int i = 0; i < 10; i++)
+			draw_string(app, 10, i * 10, msg);
+	}
 	if (app->event.type == KeyPress)
 	{
 		KeySym key = XLookupKeysym(&app->event.xkey, 0);
-		if (&key != NULL)
+		if (key != 0) // I dont know why in tutorial used a NULL if KeySym is just unsigned long.
 			printf("Keyboard event.\n");
 	}
 	if (app->event.type == ButtonPressMask || app->event.type == PointerMotionMask)
@@ -70,8 +80,9 @@ int main(void)
 
 	App *app = create_app(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	while (1)
+	while (app->running == 1) 
 		handle_app_event(app, msg);
+		
 
 	close_app(app);
 	return 0;
