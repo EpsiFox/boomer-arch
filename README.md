@@ -7,7 +7,7 @@ This is a port of boomer application that made by Tsoding to arch linux.
 
 # Quick start
 
-```
+```console
 $ make
 $ make install
 ```
