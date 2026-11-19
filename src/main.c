@@ -1,9 +1,11 @@
 #include <GL/gl.h>
+#include <GL/glx.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #define WINDOW_WIDTH 800
@@ -16,7 +18,7 @@ typedef struct
 	Window window;
 	XEvent event;
 	int screen;
-	int running;
+	bool running;
 } App;
 
 App *create_app(int width, int height)
@@ -35,13 +37,13 @@ App *create_app(int width, int height)
 		fprintf(stderr, "Cannot open display\n");
 		exit(1);
 	}
-
+	
 	app->screen = DefaultScreen(app->display);
 	app->rootWindow = RootWindow(app->display, app->screen);
 	app->window = XCreateSimpleWindow(app->display, app->rootWindow, 10, 10, width, height, 1, BlackPixel(app->display, app->screen), WhitePixel(app->display, app->screen));
 	XSelectInput(app->display, app->window, ExposureMask | KeyPressMask | ButtonPressMask | PointerMotionMask);
 	XMapWindow(app->display, app->window);
-	app->running = 1;
+	app->running = true;
 	return app;
 }
 
@@ -74,16 +76,32 @@ void close_app(App *app)
 	free(app);
 }
 
+void print_glx_version(Display *display)
+{
+	// I dont know if its a good idea do this, but at the end of this method I freed this variables and it works.
+	int *maj = malloc(sizeof(int));
+	int *min = malloc(sizeof(int));
+
+	if (glXQueryVersion(display, maj, min))
+		printf("GLX Version: %d.%d\n", *maj, *min);
+	else
+		printf("GLX Version not found (lol)");
+
+	free(maj);
+	free(min);
+}
+
 int main(void)
 {
 	char *msg = "Hello, boomer!";
 
 	App *app = create_app(WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	print_glx_version(app->display);
+
 	while (app->running == 1) 
 		handle_app_event(app, msg);
 		
-
 	close_app(app);
 	return 0;
 }
